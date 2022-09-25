@@ -1,0 +1,11 @@
+name: geoloc_env
+channels:
+  - defaults
+dependencies:
+  - requests
+  - python=3.9
+  - numpy
+  - pandas
+  - pip:
+    - googlemaps
+prefix: /opt/miniconda3/envs/geoloc_env
