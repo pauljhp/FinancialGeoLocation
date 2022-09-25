@@ -99,7 +99,7 @@ class PlacesQuery:
                 for k in keywords
                 ]
                 for future in as_completed(futures):
-                    res += future.result()
+                    res += [future.result()]
         else:
             for chunk in iter_by_chunk(keywords, max_workers):
                 res += self.batch_lookup(chunk, limit, radius, 
