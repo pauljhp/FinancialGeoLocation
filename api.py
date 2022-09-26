@@ -66,9 +66,11 @@ class PlacesQuery:
         # print(i, placetoken)
         df = pd.concat([pd.Series(d).to_frame().T for d in results])
         df.loc[:, "country"] = df.place_id.apply(self.get_country)
-        filter = eval("&".join([f"(df.types.str.contains('{k}'))" 
-            for k in location_type_filter]))
-        df = df.loc[~filter] if location_type_filter_out else df.loc[filter]
+        # TODO - fix the filter
+        filter = "&".join([f"(df.types.str.contains('{k}'))" 
+            for k in location_type_filter]) 
+        df = eval(fr"""df.loc[~({str(filter)})]""") if location_type_filter_out \
+            else eval(fr"""df.loc[({str(filter)})]""")
         return df
     
     @classmethod
@@ -99,7 +101,7 @@ class PlacesQuery:
                 for k in keywords
                 ]
                 for future in as_completed(futures):
-                    res += future.result()
+                    res += [future.result()]
         else:
             for chunk in iter_by_chunk(keywords, max_workers):
                 res += self.batch_lookup(chunk, limit, radius, 
