@@ -8,30 +8,34 @@ from typing import Union, Optional, Sequence
 from itertools import product
 
 
-def get_country_count(company_name: str, res: pd.DataFrame, selected_types: Sequence[str]) -> pd.Series:
+def get_country_count(company_name: str, 
+    res: pd.DataFrame, 
+    selected_types: Sequence[str]) -> pd.Series:
     res = res.explode("types")
     # st.text(f"""res.loc[{filter}]""")
-    filtered = res.loc[res.types.isin(selected_types)]#eval(fr"""res.loc[({filter})]""")
-    summary = filtered.groupby("country").count()\
-        .place_id\
-        .sort_values(ascending=False)
-    summary.name = "address count"
-    # st.write(list(product([company_name], 
-    #     summary.index.values)))
-    summary.index = pd.MultiIndex.from_tuples(product([company_name], 
-        summary.index.values))
-    return summary
-
+    filtered = res.loc[res.types.isin(selected_types)]
+    if len(filtered):
+        summary = filtered.groupby("country").count()\
+            .place_id\
+            .sort_values(ascending=False)
+        summary.name = "address count"
+        # st.write(list(product([company_name], 
+        #     summary.index.values)))
+        summary.index = pd.MultiIndex.from_tuples(product([company_name], 
+            summary.index.values))
+        return summary
+    else:
+        return pd.Series()
 
 ##########################
 ### single comp search ###
 ##########################
-st.title("Geolocation extractor - power by google map")
+st.title("Geolocation extractor - powered by google map")
 st.text("Author: Paul Peng\nCopyright 2022\nUse it wisely!")
 st.header("Single Company Search")
 
 company_name = st.text_input(label="Please enter the company you would like to search")
-limit = st.number_input(label="please enter the upper limit of places you can accept")
+limit = st.number_input(label="please enter the max # of results")
 apikey = st.text_input(label="please enter your apikey", )
 res = PlacesQuery.search_place(apikey=apikey, keyword=company_name, limit=limit)
 types = np.unique(list(chain(*res.types.values)))
@@ -52,7 +56,7 @@ st.write(summary)
 st.header("Batched Company Search")
 
 company_list_str = st.text_input(label="Please enter the companies you would like to search, and seperate them with comma.")
-limit_batch = st.number_input(label="please enter the upper limit of places you can accept",
+limit_batch = st.number_input(label="please enter the max # of results",
     key=1)
 # apikey = st.text_input(label="please enter your apikey", )
 
@@ -70,9 +74,9 @@ types = np.unique(list(
         for res in res_dict.values()])))
 selected_types = st.multiselect(label="select the type of locations", 
     options=types)
-
-summary = pd.concat(get_country_count(co_name, res, selected_types).to_frame() 
-    for co_name, res in res_dict.items())
+# st.write(get_country_count(list(res_dict.keys())[0], list(res_dict.values())[0], selected_types))
+summary = pd.concat([get_country_count(co_name, res, selected_types).to_frame() 
+    for co_name, res in res_dict.items()])
 summary = summary.T.stack(1).T
 
 st.write(summary)
