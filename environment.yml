@@ -1,4 +1,4 @@
-name: geoloc_env
+name: base
 channels:
   - defaults
 dependencies:
