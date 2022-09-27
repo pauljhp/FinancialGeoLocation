@@ -10,4 +10,4 @@ dependencies:
   - pip:
     - googlemaps
     - streamlit
-prefix: /opt/miniconda3/envs/geoloc_env
+# prefix: /opt/miniconda3/envs/geoloc_env
